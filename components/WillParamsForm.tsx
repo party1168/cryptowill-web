@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DURATION_UNITS, PERIOD_PRESETS, splitDuration, type Periods } from "@/lib/periods";
+import { Field, inputClass } from "./ui";
 
 const FIELDS: { key: keyof Periods; label: string; help: string }[] = [
   { key: "checkInInterval", label: "Check-in interval", help: "How often you must prove you are alive." },
@@ -26,24 +27,23 @@ export function WillParamsForm({
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1">
-        <span className="font-medium">Amount (ETH)</span>
+      <Field label="Amount (ETH)" help="Locked in the contract until you cancel or your heir inherits.">
         <input
-          className="rounded border px-2 py-1 font-mono dark:bg-zinc-900"
+          className={`${inputClass} font-mono`}
           inputMode="decimal"
           placeholder="0.001"
           value={amount}
           onChange={(e) => onAmountChange(e.target.value.trim())}
         />
-      </label>
+      </Field>
 
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-zinc-500">Presets:</span>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted">Timing preset</span>
         {Object.entries(PERIOD_PRESETS).map(([key, preset]) => (
           <button
             key={key}
             type="button"
-            className="rounded border px-2 py-0.5 text-sm"
+            className="rounded-full border border-line-strong bg-card px-3 py-1 text-xs font-medium text-ink-soft transition-colors hover:border-brass hover:text-ink"
             onClick={() => {
               onPeriodsChange({ ...preset.periods });
               setPresetVersion((v) => v + 1);
@@ -83,11 +83,10 @@ function DurationInput({
   const value = seconds / unitSeconds;
 
   return (
-    <label className="flex flex-col gap-1">
-      <span className="font-medium">{label}</span>
-      <div className="flex gap-2">
+    <Field label={label} help={help}>
+      <div className="grid grid-cols-[8rem_9rem] gap-2">
         <input
-          className="w-28 rounded border px-2 py-1 font-mono dark:bg-zinc-900"
+          className={`${inputClass} font-mono`}
           type="number"
           min={1}
           step={1}
@@ -95,7 +94,7 @@ function DurationInput({
           onChange={(e) => onChange(Math.max(0, Math.floor(Number(e.target.value))) * unitSeconds)}
         />
         <select
-          className="rounded border px-2 py-1 dark:bg-zinc-900"
+          className={inputClass}
           value={unitSeconds}
           onChange={(e) => {
             const next = Number(e.target.value);
@@ -110,7 +109,6 @@ function DurationInput({
           ))}
         </select>
       </div>
-      <span className="text-xs text-zinc-500">{help}</span>
-    </label>
+    </Field>
   );
 }

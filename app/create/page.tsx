@@ -6,6 +6,8 @@ import { useState } from "react";
 import { formatEther, parseEther, parseEventLogs, toHex } from "viem";
 import { useBalance, useConnection, useReadContract } from "wagmi";
 import { TxStatus } from "@/components/TxStatus";
+import { StepCard } from "@/components/StepCard";
+import { Button, Eyebrow, Notice, Title } from "@/components/ui";
 import { WillParamsForm } from "@/components/WillParamsForm";
 import { useWillTx } from "@/hooks/useWillTx";
 import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof";
@@ -108,66 +110,66 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Create a will</h1>
-        <Link href="/" className="text-sm underline">
-          Home
-        </Link>
+    <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
+      <div className="flex flex-col gap-3">
+        <Eyebrow>New will</Eyebrow>
+        <Title>Create a will</Title>
+        <p className="text-ink-soft">
+          Three steps: your heir verifies, you set the terms, then you verify yourself and lock the funds.
+        </p>
       </div>
 
-      {existingWillId ? (
-        <p>
+      {!address ? (
+        <Notice>Connect your wallet (top right) to create a will.</Notice>
+      ) : existingWillId ? (
+        <Notice>
           This wallet already has an active will.{" "}
-          <Link className="underline" href={`/will/${existingWillId}`}>
+          <Link className="font-medium underline underline-offset-2" href={`/will/${existingWillId}`}>
             View will #{existingWillId.toString()}
           </Link>
-        </p>
+        </Notice>
       ) : (
         <>
-          <section className="flex flex-col gap-2 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-            <h2 className="font-bold">1. Register your heir</h2>
-            <p className="text-sm text-zinc-500">
-              Your heir scans with their own World ID. Only their anonymous identifier is stored — they will prove
-              the same identity later to claim.
-            </p>
+          <StepCard
+            n={1}
+            title="Register your heir"
+            done={heirNullifier !== null}
+            description="Hand the device to your heir so they can verify with their own World ID. Only an anonymous identifier is stored — they prove the same identity later to claim."
+          >
             {heirNullifier !== null && (
-              <p className="break-all font-mono text-xs">Heir: {toHex(heirNullifier, { size: 32 })}</p>
+              <p className="text-xs text-muted">
+                Heir ID <span className="font-mono break-all text-ink-soft">{toHex(heirNullifier, { size: 32 })}</span>
+              </p>
             )}
-            <button
-              className="self-start rounded border px-3 py-1 disabled:opacity-40"
-              disabled={busy}
-              onClick={registerHeir}
-            >
-              {heirNullifier === null ? "Heir: verify with World ID" : "Register a different heir"}
-            </button>
-          </section>
+            <div>
+              <Button variant={heirNullifier === null ? "primary" : "secondary"} disabled={busy} onClick={registerHeir}>
+                {heirNullifier === null ? "Heir: verify with World ID" : "Register a different heir"}
+              </Button>
+            </div>
+          </StepCard>
 
-          <section className="flex flex-col gap-2 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-            <h2 className="font-bold">2. Set the terms</h2>
+          <StepCard n={2} title="Set the terms" done={amountWei !== null && heirNullifier !== null}>
             <WillParamsForm amount={amount} onAmountChange={setAmount} periods={periods} onPeriodsChange={setPeriods} />
             {balance.data && (
-              <p className="text-xs text-zinc-500">Wallet balance: {formatEther(balance.data.value)} ETH</p>
+              <p className="text-xs text-muted">Wallet balance: {formatEther(balance.data.value)} ETH</p>
             )}
-          </section>
+          </StepCard>
 
-          <section className="flex flex-col gap-2 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-            <h2 className="font-bold">3. Verify yourself and create</h2>
-            <p className="text-sm text-zinc-500">
-              Scan with your own World ID. The transaction is sent right after, so keep your wallet open.
-            </p>
-            <button
-              className="self-start rounded bg-black px-4 py-2 text-white disabled:opacity-40 dark:bg-white dark:text-black"
-              disabled={!!blocker || busy}
-              onClick={createWill}
-            >
-              Verify &amp; create will
-            </button>
-            {blocker && <p className="text-sm text-zinc-500">{blocker}</p>}
+          <StepCard
+            n={3}
+            title="Verify yourself and create"
+            description="Verify with your own World ID. The transaction is sent right after, so keep your wallet open."
+          >
+            <div>
+              <Button disabled={!!blocker || busy} onClick={createWill}>
+                Verify &amp; create will
+              </Button>
+            </div>
+            {blocker && <p className="text-sm text-muted">{blocker}</p>}
             <TxStatus status={tx.status} />
-          </section>
+          </StepCard>
 
-          {scanError && <p className="text-sm text-red-600">{scanError}</p>}
+          {scanError && <Notice tone="error">{scanError}</Notice>}
         </>
       )}
 
