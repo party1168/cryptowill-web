@@ -77,7 +77,7 @@ sequenceDiagram
 
 - **Two World ID actions.** `cryptowill-alive-check` is used by the owner (create, check in, cancel); `cryptowill-heir-claim` is used by the heir (register, look up wills, claim).
 - **Proofs are bound to addresses.** The owner's proof signal is the owner's wallet address; the heir's claim signal is the payout address. A proof copied from the mempool can't be used from another wallet or redirected to another address.
-- **The heir has no wallet on-chain.** Heirs find the wills that name them by verifying with World ID; the contract keeps an index from heir identifier to will IDs. Any wallet can relay the heir's claim.
+- **The heir has no wallet on-chain.** Heirs find the wills that name them by verifying with World ID; the contract keeps an index from heir identifier to will IDs.
 - **Verification happens on-chain.** The app checks each proof before sending, so users never sign a transaction that would revert — but the contract and the WorldIDRouter are the only things that decide.
 
 ## Why Proof of Human
