@@ -80,6 +80,28 @@ sequenceDiagram
 - **The heir has no wallet on-chain.** Heirs find the wills that name them by verifying with World ID; the contract keeps an index from heir identifier to will IDs. Any wallet can relay the heir's claim.
 - **Verification happens on-chain.** The app checks each proof before sending, so users never sign a transaction that would revert — but the contract and the WorldIDRouter are the only things that decide.
 
+## Why Proof of Human
+
+CryptoWill has two moments that need trust:
+
+1. **Checking in** — is this still the person who wrote the will?
+2. **Claiming** — is this the heir who was named?
+
+Both need a stable, anonymous identity that only one real human can reproduce, verified on-chain because it releases funds irreversibly. **Orb-verified Proof of Human** is the minimum credential that provides exactly that:
+
+- **Passport / NFC** would reveal attributes such as nationality or age that a will never needs.
+- **Selfie Check** gives lower assurance for a transfer that can't be undone.
+- **Orb Proof of Human** proves "a unique human, the same one as before" — and nothing else.
+
+We verify legacy (World ID 3.0) Orb proofs on-chain on purpose: our design treats the nullifier as a persistent identity, so the owner produces the same identifier on every check-in. World ID 4.0 uniqueness nullifiers are one-time, which would make repeated check-ins impossible.
+
+## World ID integration debrief
+
+- **Time to first success:** about 4 hours to the first proof verified on-chain through the WorldIDRouter; about 12 hours to the complete product.
+- **Friction:** new Developer Portal apps are forced onto World ID 4.0, while our use case needs repeated verification of the same person, so finding the `allow_legacy_proofs` + `orbLegacy()` path took most of the first 4 hours. IDKit 4 also requires a backend to sign `rp_context`, even though all verification happens on-chain. The simulator only recognizes staging apps, and its "app not found" error didn't point to the environment mismatch. One simulator identity returned a root that had expired months earlier, which only surfaced on-chain as `ExpiredRoot()`.
+- **Missing capability / docs:** an on-chain path for "same human, many times" under 4.0; documentation that `0x` hex signals are hashed as raw bytes (matching `abi.encodePacked(address)`); a list of router errors and their selectors.
+- **Most impactful improvement:** an official on-chain verification path for repeated verification of the same person in World ID 4.0 — liveness checks, recurring eligibility and account recovery all depend on it.
+
 ## Tech stack
 
 - [Next.js 16](https://nextjs.org) (App Router) and React 19
