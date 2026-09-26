@@ -32,7 +32,7 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section className="grid items-start gap-6 md:grid-cols-2">
         <HomeActions />
         <HeirLookup />
       </section>
