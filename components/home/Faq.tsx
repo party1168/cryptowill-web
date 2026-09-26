@@ -6,10 +6,6 @@ const FAQ: { q: string; a: string }[] = [
     a: "Nothing is lost right away. After the check-in interval you enter a grace period, and even once your heir starts a claim you have a challenge period to stop it. A single check-in at any point until the challenge period ends puts the will back to Active.",
   },
   {
-    q: "Does my heir need a crypto wallet?",
-    a: "No wallet or gas is needed to verify. When claiming, your heir only needs an address to receive the funds — the transaction itself can be submitted by anyone, and the payout address is locked into their proof.",
-  },
-  {
     q: "Could someone else claim my will?",
     a: "Only the World ID you registered as heir can start a claim. The contract checks that the proof's identifier matches the one stored on the will, and World ID's router verifies the proof itself on-chain.",
   },
