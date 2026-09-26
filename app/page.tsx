@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ConnectButton } from "@/components/ConnectButton";
 import { HeirLookup } from "@/components/HeirLookup";
 import { HomeActions } from "@/components/HomeActions";
@@ -15,10 +14,6 @@ export default function Home() {
       </section>
 
       <HeirLookup />
-
-      <Link href="/dev" className="text-sm underline">
-        Dev console →
-      </Link>
     </main>
   );
 }
