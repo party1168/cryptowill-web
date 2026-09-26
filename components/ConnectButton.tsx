@@ -1,5 +1,6 @@
 "use client";
 
+import type { EIP1193Provider } from "viem";
 import { useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain } from "wagmi";
 import { config } from "@/lib/config";
 import { explainError } from "@/lib/errors";
@@ -12,13 +13,24 @@ const buttonClass =
   "rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-40 dark:bg-white dark:text-black";
 
 export function ConnectButton() {
-  const { address, chainId, status } = useConnection();
+  const { address, chainId, connector, status } = useConnection();
   const connectors = useConnectors();
   const connect = useConnect();
   const disconnect = useDisconnect();
   const switchChain = useSwitchChain();
 
   const error = connect.error ?? switchChain.error ?? disconnect.error;
+
+  // wagmi only waits 100ms for wallet_revokePermissions, which MetaMask usually misses, so the site
+  // stays authorized in the wallet. Revoke explicitly so the next Connect prompts for an account again
+  // (needed to switch between owner / heir / relayer). Wallets without the method just skip this.
+  async function disconnectAndRevoke() {
+    try {
+      const provider = (await connector?.getProvider()) as EIP1193Provider | undefined;
+      await provider?.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] });
+    } catch {}
+    disconnect.mutate();
+  }
 
   if (status === "connecting" || status === "reconnecting") {
     return <button className={buttonClass} disabled>Connecting…</button>;
@@ -53,7 +65,7 @@ export function ConnectButton() {
             Switch to {config.chain.name}
           </button>
         )}
-        <button className="text-sm underline" onClick={() => disconnect.mutate()}>
+        <button className="text-sm underline" onClick={disconnectAndRevoke}>
           Disconnect
         </button>
       </div>
