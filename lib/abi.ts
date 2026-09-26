@@ -275,6 +275,25 @@ export const cryptoWillAbi = [
   },
   {
     "type": "function",
+    "name": "willIdsOfHeir",
+    "inputs": [
+      {
+        "name": "heirNullifier",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "wills",
     "inputs": [
       {
