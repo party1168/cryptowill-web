@@ -7,7 +7,6 @@ import { FinalizeAction } from "@/components/FinalizeAction";
 import { HeirClaim } from "@/components/HeirClaim";
 import { OwnerActions } from "@/components/OwnerActions";
 import { PhaseBanner } from "@/components/PhaseBanner";
-import { ConnectButton } from "@/components/ConnectButton";
 import { useWill } from "@/hooks/useWill";
 import { formatDuration } from "@/lib/periods";
 
@@ -24,7 +23,6 @@ export default function WillPage() {
         Home
       </Link>
       <h1 className="text-2xl font-bold">Will #{id}</h1>
-      <ConnectButton />
       {willId === null || will === null ? (
         <p>No will with this id.</p>
       ) : will ? (

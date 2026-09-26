@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatEther, parseEther, parseEventLogs, toHex } from "viem";
 import { useBalance, useConnection, useReadContract } from "wagmi";
-import { ConnectButton } from "@/components/ConnectButton";
 import { TxStatus } from "@/components/TxStatus";
 import { WillParamsForm } from "@/components/WillParamsForm";
 import { useWillTx } from "@/hooks/useWillTx";
@@ -116,7 +115,6 @@ export default function CreatePage() {
           Home
         </Link>
       </div>
-      <ConnectButton />
 
       {existingWillId ? (
         <p>

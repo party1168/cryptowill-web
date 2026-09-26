@@ -4,13 +4,11 @@ import type { EIP1193Provider } from "viem";
 import { useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain } from "wagmi";
 import { config } from "@/lib/config";
 import { explainError } from "@/lib/errors";
+import { Button } from "./ui";
 
 export function shortAddress(address: string) {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
-
-const buttonClass =
-  "rounded bg-black px-4 py-2 text-sm text-white disabled:opacity-40 dark:bg-white dark:text-black";
 
 export function ConnectButton() {
   const { address, chainId, connector, status } = useConnection();
@@ -32,44 +30,49 @@ export function ConnectButton() {
     disconnect.mutate();
   }
 
+  let control;
   if (status === "connecting" || status === "reconnecting") {
-    return <button className={buttonClass} disabled>Connecting…</button>;
-  }
-
-  if (!address) {
+    control = (
+      <Button variant="secondary" disabled>
+        Connecting…
+      </Button>
+    );
+  } else if (!address) {
     const injected = connectors[0];
-    return (
-      <div className="flex flex-col gap-2">
-        <button
-          className={buttonClass}
-          disabled={!injected || connect.isPending}
-          onClick={() => connect.mutate({ connector: injected })}
-        >
-          Connect Wallet
-        </button>
-        {error && <p className="text-sm text-red-600">{explainError(error)}</p>}
+    control = (
+      <Button disabled={!injected || connect.isPending} onClick={() => connect.mutate({ connector: injected })}>
+        Connect wallet
+      </Button>
+    );
+  } else if (chainId !== config.chain.id) {
+    control = (
+      <Button
+        variant="secondary"
+        className="border-warning/40 text-warning"
+        disabled={switchChain.isPending}
+        onClick={() => switchChain.mutate({ chainId: config.chain.id })}
+      >
+        Switch to {config.chain.name}
+      </Button>
+    );
+  } else {
+    control = (
+      <div className="flex items-center gap-3">
+        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 py-1.5 font-mono text-sm">
+          <span className="h-2 w-2 rounded-full bg-success" aria-hidden />
+          {shortAddress(address)}
+        </span>
+        <Button variant="ghost" onClick={disconnectAndRevoke}>
+          Disconnect
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-3">
-        <span className="font-mono text-sm">{shortAddress(address)}</span>
-        {chainId !== config.chain.id && (
-          <button
-            className={buttonClass}
-            disabled={switchChain.isPending}
-            onClick={() => switchChain.mutate({ chainId: config.chain.id })}
-          >
-            Switch to {config.chain.name}
-          </button>
-        )}
-        <button className="text-sm underline" onClick={disconnectAndRevoke}>
-          Disconnect
-        </button>
-      </div>
-      {error && <p className="text-sm text-red-600">{explainError(error)}</p>}
+    <div className="flex flex-col items-end gap-1">
+      {control}
+      {error && <p className="max-w-xs text-right text-xs text-danger">{explainError(error)}</p>}
     </div>
   );
 }

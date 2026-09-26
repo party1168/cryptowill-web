@@ -1,4 +1,3 @@
-import { ConnectButton } from "@/components/ConnectButton";
 import { HeirLookup } from "@/components/HeirLookup";
 import { HomeActions } from "@/components/HomeActions";
 
@@ -9,7 +8,6 @@ export default function Home() {
 
       <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
         <h2 className="font-bold">Your will</h2>
-        <ConnectButton />
         <HomeActions />
       </section>
 
