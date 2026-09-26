@@ -18,7 +18,7 @@ export function ConnectButton() {
   const disconnect = useDisconnect();
   const switchChain = useSwitchChain();
 
-  const error = connect.error ?? switchChain.error;
+  const error = connect.error ?? switchChain.error ?? disconnect.error;
 
   if (status === "connecting" || status === "reconnecting") {
     return <button className={buttonClass} disabled>Connecting…</button>;
