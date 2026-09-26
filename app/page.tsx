@@ -1,6 +1,7 @@
 import { HeirLookup } from "@/components/HeirLookup";
 import { HomeActions } from "@/components/HomeActions";
 import { Architecture } from "@/components/home/Architecture";
+import { Faq } from "@/components/home/Faq";
 import { Lifecycle } from "@/components/home/Lifecycle";
 import { TrustPillars } from "@/components/home/TrustPillars";
 import { Eyebrow, Title } from "@/components/ui";
@@ -58,6 +59,8 @@ export default function Home() {
       <TrustPillars />
 
       <Architecture />
+
+      <Faq />
     </main>
   );
 }
