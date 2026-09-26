@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { formatEther, toHex } from "viem";
+import { OwnerActions } from "@/components/OwnerActions";
 import { PhaseBanner } from "@/components/PhaseBanner";
+import { ConnectButton } from "@/components/ConnectButton";
 import { useWill } from "@/hooks/useWill";
 import { formatDuration } from "@/lib/periods";
 
@@ -12,7 +14,7 @@ const formatTime = (unix: number) => new Date(unix * 1000).toLocaleString("en-US
 export default function WillPage() {
   const { id } = useParams<{ id: string }>();
   const willId = /^\d+$/.test(id) ? BigInt(id) : null;
-  const { will } = useWill(willId);
+  const { will, refetch } = useWill(willId);
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-8">
@@ -20,11 +22,13 @@ export default function WillPage() {
         Home
       </Link>
       <h1 className="text-2xl font-bold">Will #{id}</h1>
+      <ConnectButton />
       {willId === null || will === null ? (
         <p>No will with this id.</p>
       ) : will ? (
         <>
           <PhaseBanner will={will} />
+          <OwnerActions will={will} onDone={() => refetch()} />
           <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-zinc-500">Amount</dt>
             <dd>{formatEther(will.amount)} ETH</dd>
