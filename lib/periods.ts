@@ -32,3 +32,16 @@ export function formatDuration(seconds: number): string {
   const unit = DURATION_UNITS.find((u) => u.seconds === unitSeconds)!.label;
   return `${value} ${value === 1 ? unit.slice(0, -1) : unit}`;
 }
+
+/** Compact remaining-time label, e.g. "2d 3h", "4m 05s". */
+export function formatRemaining(seconds: number): string {
+  if (seconds <= 0) return "now";
+  const d = Math.floor(seconds / DAY);
+  const h = Math.floor((seconds % DAY) / HOUR);
+  const m = Math.floor((seconds % HOUR) / MINUTE);
+  const s = seconds % MINUTE;
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${String(s).padStart(2, "0")}s`;
+  return `${s}s`;
+}

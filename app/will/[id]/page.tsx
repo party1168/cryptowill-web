@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { formatEther } from "viem";
+import { formatEther, toHex } from "viem";
+import { PhaseBanner } from "@/components/PhaseBanner";
 import { useWill } from "@/hooks/useWill";
+import { formatDuration } from "@/lib/periods";
 
-// Placeholder until the rest of M3 lands: phase, owner and amount.
+const formatTime = (unix: number) => new Date(unix * 1000).toLocaleString("en-US", { hour12: false });
+
 export default function WillPage() {
   const { id } = useParams<{ id: string }>();
   const willId = /^\d+$/.test(id) ? BigInt(id) : null;
@@ -20,11 +23,25 @@ export default function WillPage() {
       {willId === null || will === null ? (
         <p>No will with this id.</p>
       ) : will ? (
-        <div className="flex flex-col gap-1 font-mono text-sm">
-          <div>Phase: {will.phase}</div>
-          <div>Owner: {will.owner}</div>
-          <div>Amount: {formatEther(will.amount)} ETH</div>
-        </div>
+        <>
+          <PhaseBanner will={will} />
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt className="text-zinc-500">Amount</dt>
+            <dd>{formatEther(will.amount)} ETH</dd>
+            <dt className="text-zinc-500">Owner</dt>
+            <dd className="break-all font-mono">{will.owner}</dd>
+            <dt className="text-zinc-500">Heir (World ID)</dt>
+            <dd className="break-all font-mono text-xs">{toHex(will.heirNullifier, { size: 32 })}</dd>
+            <dt className="text-zinc-500">Last check-in</dt>
+            <dd>{formatTime(will.lastCheckIn)}</dd>
+            <dt className="text-zinc-500">Check-in interval</dt>
+            <dd>{formatDuration(will.checkInInterval)}</dd>
+            <dt className="text-zinc-500">Grace period</dt>
+            <dd>{formatDuration(will.gracePeriod)}</dd>
+            <dt className="text-zinc-500">Challenge period</dt>
+            <dd>{formatDuration(will.challengePeriod)}</dd>
+          </dl>
+        </>
       ) : (
         <p>Loading…</p>
       )}
