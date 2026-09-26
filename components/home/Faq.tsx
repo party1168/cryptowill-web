@@ -2,6 +2,10 @@ import { SectionHeading } from "./SectionHeading";
 
 const FAQ: { q: string; a: string }[] = [
   {
+    q: "Why Proof of Human, and not Passport or Selfie Check?",
+    a: "Two moments need trust: checking in (is this still the person who wrote the will?) and claiming (is this the heir who was named?). Both need a stable, anonymous identity that only one real human can reproduce, verified on-chain because it releases funds irreversibly. Orb-verified Proof of Human proves exactly that and nothing more: a Passport credential would reveal attributes like nationality or age that a will never needs, and a Selfie Check gives lower assurance for a transfer that can't be undone.",
+  },
+  {
     q: "What happens if I forget to check in?",
     a: "Nothing is lost right away. After the check-in interval you enter a grace period, and even once your heir starts a claim you have a challenge period to stop it. A single check-in at any point until the challenge period ends puts the will back to Active.",
   },
