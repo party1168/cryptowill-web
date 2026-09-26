@@ -11,10 +11,10 @@ const STYLES: Record<WillPhaseName, string> = {
   Cancelled: "border-line bg-paper text-muted",
 };
 
-export function PhaseBadge({ phase }: { phase: WillPhaseName }) {
+export function PhaseBadge({ phase, label }: { phase: WillPhaseName; label?: string }) {
   return (
     <span className={`inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STYLES[phase]}`}>
-      {phase}
+      {label ?? phase}
     </span>
   );
 }

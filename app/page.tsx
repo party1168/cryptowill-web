@@ -1,5 +1,6 @@
 import { HeirLookup } from "@/components/HeirLookup";
 import { HomeActions } from "@/components/HomeActions";
+import { Lifecycle } from "@/components/home/Lifecycle";
 import { Eyebrow, Title } from "@/components/ui";
 
 const STEPS = [
@@ -49,6 +50,8 @@ export default function Home() {
           ))}
         </ol>
       </section>
+
+      <Lifecycle />
     </main>
   );
 }
