@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { formatEther, toHex } from "viem";
 import { FinalizeAction } from "@/components/FinalizeAction";
+import { HeirClaim } from "@/components/HeirClaim";
 import { OwnerActions } from "@/components/OwnerActions";
 import { PhaseBanner } from "@/components/PhaseBanner";
 import { ConnectButton } from "@/components/ConnectButton";
@@ -30,6 +31,7 @@ export default function WillPage() {
         <>
           <PhaseBanner will={will} />
           <OwnerActions will={will} onDone={() => refetch()} />
+          <HeirClaim will={will} onDone={() => refetch()} />
           <FinalizeAction will={will} onDone={() => refetch()} />
           <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
             <dt className="text-zinc-500">Amount</dt>
