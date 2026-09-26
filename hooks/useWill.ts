@@ -27,7 +27,36 @@ export type WillData = {
   challengeEndsAt: number | null;
 };
 
-const contract = { address: config.cryptoWill.address, abi: cryptoWillAbi } as const;
+export const cryptoWillContract = { address: config.cryptoWill.address, abi: cryptoWillAbi } as const;
+const contract = cryptoWillContract;
+
+/** Raw return value of the `wills(id)` getter. */
+export type WillTuple = readonly [Address, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, Address, number];
+
+/** Turns `wills(id)` + `currentPhase(id)` into WillData; null when the will doesn't exist. */
+export function parseWill(id: bigint, tuple: WillTuple, phase: number): WillData | null {
+  const [owner, ownerNullifier, heirNullifier, amount, lastCheckIn, interval, grace, challenge, initiatedAt, payout] = tuple;
+  if (owner === zeroAddress) return null;
+  const last = Number(lastCheckIn);
+  const initiated = Number(initiatedAt);
+  return {
+    id,
+    owner,
+    ownerNullifier,
+    heirNullifier,
+    amount,
+    lastCheckIn: last,
+    checkInInterval: Number(interval),
+    gracePeriod: Number(grace),
+    challengePeriod: Number(challenge),
+    claimInitiatedAt: initiated,
+    payoutAddress: payout,
+    phase: phaseName(phase) ?? "None",
+    graceStartsAt: last + Number(interval),
+    claimableAt: last + Number(interval) + Number(grace),
+    challengeEndsAt: initiated > 0 ? initiated + Number(challenge) : null,
+  };
+}
 
 /** Reads a will plus its derived phase, polling so phase changes show up without a reload. */
 export function useWill(willId: bigint | null) {
@@ -45,34 +74,8 @@ export function useWill(willId: bigint | null) {
 
   let will: WillData | null | undefined; // undefined = loading, null = no such will
   if (willId !== null && query.data) {
-    const [w, phase] = query.data as unknown as [
-      readonly [Address, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, Address, number],
-      number,
-    ];
-    const [owner, ownerNullifier, heirNullifier, amount, lastCheckIn, interval, grace, challenge, initiatedAt, payout] = w;
-    if (owner === zeroAddress) {
-      will = null;
-    } else {
-      const last = Number(lastCheckIn);
-      const initiated = Number(initiatedAt);
-      will = {
-        id: willId,
-        owner,
-        ownerNullifier,
-        heirNullifier,
-        amount,
-        lastCheckIn: last,
-        checkInInterval: Number(interval),
-        gracePeriod: Number(grace),
-        challengePeriod: Number(challenge),
-        claimInitiatedAt: initiated,
-        payoutAddress: payout,
-        phase: phaseName(phase) ?? "None",
-        graceStartsAt: last + Number(interval),
-        claimableAt: last + Number(interval) + Number(grace),
-        challengeEndsAt: initiated > 0 ? initiated + Number(challenge) : null,
-      };
-    }
+    const [tuple, phase] = query.data as unknown as [WillTuple, number];
+    will = parseWill(willId, tuple, phase);
   }
 
   return { will, error: query.error, refetch: query.refetch };
