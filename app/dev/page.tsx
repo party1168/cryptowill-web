@@ -36,7 +36,7 @@ export default function DevPage() {
   const [heirNullifier, setHeirNullifier] = useState<bigint | null>(null);
   const [payout, setPayout] = useState("");
   const [log, setLog] = useState<string[]>([]);
-  const append = (line: string) => setLog((l) => [`${new Date().toLocaleTimeString()}  ${line}`, ...l]);
+  const append = (line: string) => setLog((l) => [`${new Date().toLocaleTimeString("en-US", { hour12: false })}  ${line}`, ...l]);
 
   async function run(label: string, fn: () => Promise<void>) {
     append(`${label}: started`);
@@ -51,13 +51,13 @@ export default function DevPage() {
     run("Heir registration", async () => {
       const { nullifierHash } = await worldId.request(CLAIM_ACTION, HEIR_REGISTER_SIGNAL);
       setHeirNullifier(nullifierHash);
-      append(`Heir registration: nullifier ${toHex(nullifierHash)}`);
+      append(`Heir registration: nullifier ${toHex(nullifierHash, { size: 32 })}`);
     });
 
   const simulateCreateWill = (owner: Address, heir: bigint) =>
     run("Simulate createWill", async () => {
       const { root, nullifierHash, proof } = await worldId.request(ALIVE_ACTION, owner);
-      append(`Owner proof ok (signal_hash matches), nullifier ${toHex(nullifierHash)}`);
+      append(`Owner proof ok (signal_hash matches), nullifier ${toHex(nullifierHash, { size: 32 })}`);
       // Simulate right away: the proof's root expires (TD-006).
       const { result } = await publicClient!.simulateContract({
         address: config.cryptoWill.address,
@@ -103,7 +103,7 @@ export default function DevPage() {
         <button className="self-start rounded border px-3 py-1 disabled:opacity-40" disabled={busy} onClick={registerHeir}>
           Scan as heir
         </button>
-        <div className="break-all font-mono">heirNullifier: {heirNullifier !== null ? toHex(heirNullifier) : "—"}</div>
+        <div className="break-all font-mono">heirNullifier: {heirNullifier !== null ? toHex(heirNullifier, { size: 32 }) : "—"}</div>
       </section>
 
       <section className="flex flex-col gap-2 rounded border border-zinc-300 p-4 dark:border-zinc-700">
