@@ -8,6 +8,8 @@ import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof"
 import { CLAIM_ACTION, HEIR_REGISTER_SIGNAL } from "@/lib/constants";
 import { explainError } from "@/lib/errors";
 import { shortAddress } from "./ConnectButton";
+import { PhaseBadge } from "./PhaseBadge";
+import { Button, Card, CardTitle, Eyebrow, Notice } from "./ui";
 
 const STORAGE_KEY = "cryptowill.heirNullifier";
 
@@ -63,51 +65,54 @@ export function HeirLookup() {
   const forget = () => save(null);
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="font-bold">Are you an heir?</h2>
-      <p className="text-sm text-zinc-500">
-        Verify with World ID to see the wills that name you. No wallet is needed.
-      </p>
-      <div className="flex gap-3">
-        <button
-          className="rounded border px-3 py-1 disabled:opacity-40"
-          disabled={worldId.busy}
-          onClick={lookUp}
-        >
-          {nullifier === null ? "Find wills that name me" : "Verify again"}
-        </button>
-        {nullifier !== null && (
-          <button className="text-sm underline" onClick={forget}>
-            Forget
-          </button>
-        )}
+    <Card className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Eyebrow>For the heir</Eyebrow>
+        <CardTitle>See what was left to you</CardTitle>
       </div>
+      <p className="text-sm text-ink-soft">
+        Verify with World ID to find the wills that name you. No wallet is needed to look.
+      </p>
 
       {nullifier !== null &&
         (wills === undefined ? (
-          <p className="text-sm">Loading…</p>
+          <p className="text-sm text-muted">Looking up wills…</p>
         ) : wills.length === 0 ? (
-          <p className="text-sm">No wills name this World ID as heir.</p>
+          <Notice>No wills name this World ID as heir.</Notice>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
             {wills.map((w) => (
               <li key={w.id.toString()}>
                 <Link
-                  className="flex flex-wrap justify-between gap-2 rounded border px-3 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                  className="flex items-center justify-between gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-brass-tint/40"
                   href={`/will/${w.id}`}
                 >
-                  <span className="font-medium">Will #{w.id.toString()}</span>
-                  <span>{w.phase}</span>
-                  <span>{formatEther(w.amount)} ETH</span>
-                  <span className="font-mono text-zinc-500">from {shortAddress(w.owner)}</span>
+                  <span className="flex flex-col">
+                    <span className="font-medium">
+                      Will #{w.id.toString()} · {formatEther(w.amount)} ETH
+                    </span>
+                    <span className="font-mono text-xs text-muted">from {shortAddress(w.owner)}</span>
+                  </span>
+                  <PhaseBadge phase={w.phase} />
                 </Link>
               </li>
             ))}
           </ul>
         ))}
 
-      {(scanError || error) && <p className="text-sm text-red-600">{scanError ?? explainError(error)}</p>}
+      {(scanError || error) && <Notice tone="error">{scanError ?? explainError(error)}</Notice>}
+
+      <div className="mt-auto flex items-center gap-3">
+        <Button variant={nullifier === null ? "primary" : "secondary"} disabled={worldId.busy} onClick={lookUp}>
+          {nullifier === null ? "Find wills that name me" : "Verify again"}
+        </Button>
+        {nullifier !== null && (
+          <Button variant="ghost" onClick={forget}>
+            Forget
+          </Button>
+        )}
+      </div>
       {worldId.widget}
-    </section>
+    </Card>
   );
 }

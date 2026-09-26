@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useConnection, useReadContract } from "wagmi";
 import { cryptoWillAbi } from "@/lib/abi";
 import { config } from "@/lib/config";
+import { ButtonLink, Card, CardTitle, Eyebrow } from "./ui";
 
-/** Sends the connected wallet to its will, or to /create if it has none. */
+/** Owner entry point: sends the connected wallet to its will, or to /create if it has none. */
 export function HomeActions() {
   const { address } = useConnection();
   const activeWill = useReadContract({
@@ -16,16 +16,28 @@ export function HomeActions() {
     query: { enabled: !!address },
   });
 
-  if (!address || activeWill.data === undefined) return null;
-  const linkClass = "self-start rounded bg-black px-4 py-2 text-white dark:bg-white dark:text-black";
+  let action;
+  if (!address) {
+    action = <p className="text-sm text-muted">Connect your wallet (top right) to get started.</p>;
+  } else if (activeWill.data === undefined) {
+    action = <p className="text-sm text-muted">Loading…</p>;
+  } else if (activeWill.data > 0n) {
+    action = <ButtonLink href={`/will/${activeWill.data}`}>View your will #{activeWill.data.toString()}</ButtonLink>;
+  } else {
+    action = <ButtonLink href="/create">Create a will</ButtonLink>;
+  }
 
-  return activeWill.data > 0n ? (
-    <Link className={linkClass} href={`/will/${activeWill.data}`}>
-      View your will #{activeWill.data.toString()}
-    </Link>
-  ) : (
-    <Link className={linkClass} href="/create">
-      Create a will
-    </Link>
+  return (
+    <Card className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Eyebrow>For the owner</Eyebrow>
+        <CardTitle>Leave your crypto to someone</CardTitle>
+      </div>
+      <p className="text-sm text-ink-soft">
+        Lock funds for an heir you name with their World ID. As long as you keep checking in, nothing happens — and
+        you can cancel any time.
+      </p>
+      <div className="mt-auto">{action}</div>
+    </Card>
   );
 }
