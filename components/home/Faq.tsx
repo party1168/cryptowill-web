@@ -27,15 +27,7 @@ const FAQ: { q: string; a: string }[] = [
   },
 ];
 
-const LIMITS = [
-  "Testnet only (World Chain Sepolia), unaudited — built for a hackathon.",
-  "Uses World ID 3.0 legacy proofs for on-chain verification; a World ID 4.0 migration would need a new contract.",
-  "If the heir resets their World ID, their identifier changes and they can no longer claim.",
-  "The heir's identity is only checked when claiming, so a mistake at registration (including naming yourself) can't be caught earlier.",
-  "The payout address can't be changed after a claim starts: if it cannot receive ETH, the final payout reverts and the will stays stuck — heirs should use a regular wallet address.",
-];
-
-/** Frequently asked questions plus an honest list of known limitations. */
+/** Frequently asked questions. */
 export function Faq() {
   return (
     <section className="flex flex-col gap-8">
@@ -52,15 +44,6 @@ export function Faq() {
             <p className="mt-3 text-sm leading-relaxed text-ink-soft">{item.a}</p>
           </details>
         ))}
-      </div>
-
-      <div className="flex flex-col gap-3 rounded-xl border border-warning/30 bg-warning-tint/60 p-5">
-        <p className="text-xs font-semibold tracking-[0.18em] text-warning uppercase">Known limitations</p>
-        <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-ink-soft">
-          {LIMITS.map((l) => (
-            <li key={l}>{l}</li>
-          ))}
-        </ul>
       </div>
     </section>
   );
