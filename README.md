@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/brand/cryptowill-logo-512.png" alt="CryptoWill" width="96" height="96" />
+</p>
 
-## Getting Started
+<h1 align="center">CryptoWill</h1>
 
-First, run the development server:
+<p align="center">
+  <strong>Your crypto, passed on — only if you're gone.</strong><br />
+  A dead man's switch for self-custody inheritance, secured by World ID.
+</p>
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+<p align="center">
+  <a href="https://cryptowill-web.vercel.app/"><strong>Live demo</strong></a> ·
+  <a href="https://github.com/party1168/cryptowill">Smart contract</a> ·
+  <a href="https://sepolia.worldscan.org/address/0x1d3000d8fd4b8061e0766179f93f51de47d26143">Contract on Worldscan</a>
+</p>
+
+![CryptoWill home page](docs/screenshots/home.png)
+
+## What it is
+
+CryptoWill lets you leave crypto to someone without handing over a seed phrase, trusting a custodian, or hiring a lawyer.
+
+1. **Name your heir.** Your heir verifies once with World ID. Only an anonymous identifier is stored on-chain — no name, no wallet address.
+2. **Check in to stay in control.** You prove you are a living, unique human with World ID on your own schedule. Every check-in restarts the timer.
+3. **If you stop, they inherit.** After a missed check-in and a grace period, your heir can claim. You still get a challenge window to stop it by checking in once more.
+
+This repository is the web app. The rules themselves live in the [CryptoWill smart contract](https://github.com/party1168/cryptowill); this app only collects World ID proofs and carries them to the contract.
+
+## The life of a will
+
+![The five phases of a will](docs/screenshots/lifecycle.png)
+
+| Phase | Owner can | Heir can |
+| --- | --- | --- |
+| **Active** | Check in, cancel | — |
+| **Grace** | Check in, cancel | — |
+| **Claimable** | Check in, cancel | Start a claim with a payout address |
+| **Challenge** | Check in to void the claim, cancel | — |
+| **Paid out** | — | Receives the funds (anyone can finalize) |
+
+The phase is derived on-chain from the last check-in and the three periods chosen at creation, so there is no keeper and nothing to trigger by hand.
+
+## Screenshots
+
+| Create a will | Owner view |
+| --- | --- |
+| ![Create a will](docs/screenshots/create.png) | ![Owner view of a claimable will](docs/screenshots/will-owner.png) |
+
+| Heir view | Under the hood |
+| --- | --- |
+| ![Heir view of a claimable will](docs/screenshots/will-heir.png) | ![Architecture](docs/screenshots/architecture.png) |
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Owner / Heir
+    participant App as CryptoWill app
+    participant API as Signing API
+    participant WID as World App
+    participant CW as CryptoWill contract
+    participant R as WorldIDRouter
+
+    User->>App: Check in / claim
+    App->>API: Sign the World ID request
+    API-->>App: rp_context (signed server-side)
+    App->>WID: World ID request (signal = wallet or payout address)
+    WID-->>App: Zero-knowledge proof
+    App->>App: Check signal hash, simulate transaction
+    App->>CW: Transaction with proof (from the user's wallet)
+    CW->>R: verifyProof(root, groupId = 1, signalHash, nullifier, ...)
+    R-->>CW: OK
+    CW-->>User: State updated / funds moved
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Two World ID actions.** `cryptowill-alive-check` is used by the owner (create, check in, cancel); `cryptowill-heir-claim` is used by the heir (register, look up wills, claim).
+- **Proofs are bound to addresses.** The owner's proof signal is the owner's wallet address; the heir's claim signal is the payout address. A proof copied from the mempool can't be used from another wallet or redirected to another address.
+- **The heir has no wallet on-chain.** Heirs find the wills that name them by verifying with World ID; the contract keeps an index from heir identifier to will IDs. Any wallet can relay the heir's claim.
+- **Verification happens on-chain.** The app checks each proof before sending, so users never sign a transaction that would revert — but the contract and the WorldIDRouter are the only things that decide.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- [Next.js 16](https://nextjs.org) (App Router) and React 19
+- [wagmi 3](https://wagmi.sh) and [viem 2](https://viem.sh) for wallet and contract calls
+- [IDKit 4](https://docs.world.org/world-id) for World ID, with legacy v3 proofs for on-chain verification
+- Tailwind CSS 4
+- World Chain Sepolia
 
-## Learn More
+## Getting started
 
-To learn more about Next.js, take a look at the following resources:
+Prerequisites: Node.js 20+, [pnpm](https://pnpm.io), a browser wallet (e.g. MetaMask), and a World ID app with an RP signing key from the [World Developer Portal](https://developer.world.org).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm install
+cp .env.example .env.local   # then fill in WORLD_ID_RP_ID and WORLD_ID_SIGNING_KEY
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000). With the `staging` environment, scan the QR codes with the [World ID Simulator](https://simulator.worldcoin.org).
 
-## Deploy on Vercel
+### Environment variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Where | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_WORLD_ID_APP_ID` | client | World ID app ID |
+| `NEXT_PUBLIC_WORLD_ID_ENVIRONMENT` | client | `staging` (simulator) or `production` |
+| `NEXT_PUBLIC_CRYPTOWILL_ADDRESS` | client | Deployed CryptoWill contract |
+| `NEXT_PUBLIC_CRYPTOWILL_DEPLOY_BLOCK` | client | Block the contract was deployed in |
+| `NEXT_PUBLIC_RPC_URL` | client | World Chain Sepolia RPC |
+| `WORLD_ID_RP_ID` | server | Relying-party ID from the Developer Portal |
+| `WORLD_ID_SIGNING_KEY` | server | **Secret.** RP signing key, used only by `/api/rp-signature` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The signing API only signs the two CryptoWill actions and rejects everything else.
+
+### Contract ABI
+
+`lib/abi.ts` is generated from the contracts repository's Foundry build output. After changing the contract:
+
+```bash
+# in ../cryptowill
+forge build
+# in this repo (set CRYPTOWILL_CONTRACTS_DIR if the contracts repo lives elsewhere)
+pnpm sync-abi
+```
+
+The contract is not upgradeable, so a redeploy means a new address: update `NEXT_PUBLIC_CRYPTOWILL_ADDRESS` and `NEXT_PUBLIC_CRYPTOWILL_DEPLOY_BLOCK`.
+
+## Project structure
+
+```
+app/
+  page.tsx               Home: owner and heir entry points, how it works
+  create/page.tsx        Create a will (register heir -> set terms -> verify & create)
+  will/[id]/page.tsx     A will: phase, timeline, owner / heir / finalize actions
+  api/rp-signature/      Server-side World ID request signing
+  dev/                   Integration console (development only, 404 in production)
+components/              UI (design primitives in ui.tsx, home page sections in home/)
+hooks/
+  useWorldIdProof.tsx    Promise-style World ID request -> decoded, validated proof
+  useWillTx.ts           simulate -> sign -> wait for receipt
+  useWill.ts             Read a will and its on-chain phase
+  useHeirWills.ts        Find the wills naming a World ID
+lib/
+  worldid.ts             Proof decoding and signal-hash checks
+  errors.ts              Contract and WorldIDRouter errors -> readable messages
+  config.ts              Environment configuration
+scripts/sync-abi.mjs     ABI generation from the contracts repo
+```
+
+## Deployment
+
+The app runs on Vercel at **[cryptowill-web.vercel.app](https://cryptowill-web.vercel.app/)**. Set the environment variables above in the Vercel project settings, keeping `WORLD_ID_SIGNING_KEY` server-only.
