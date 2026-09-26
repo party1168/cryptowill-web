@@ -58,7 +58,7 @@ export function ConnectButton() {
   } else {
     control = (
       <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 py-1.5 font-mono text-sm">
+        <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-line bg-card px-3 py-1.5 font-mono text-sm">
           <span className="h-2 w-2 rounded-full bg-success" aria-hidden />
           {shortAddress(address)}
         </span>

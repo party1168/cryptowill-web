@@ -89,7 +89,8 @@ export function HeirLookup() {
                 >
                   <span className="flex flex-col">
                     <span className="font-medium">
-                      Will #{w.id.toString()} · {formatEther(w.amount)} ETH
+                      Will #{w.id.toString()}
+                      {w.amount > 0n && ` · ${formatEther(w.amount)} ETH`}
                     </span>
                     <span className="font-mono text-xs text-muted">from {shortAddress(w.owner)}</span>
                   </span>

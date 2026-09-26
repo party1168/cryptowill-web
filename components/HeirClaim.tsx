@@ -9,6 +9,7 @@ import { useWillTx } from "@/hooks/useWillTx";
 import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof";
 import { CLAIM_ACTION } from "@/lib/constants";
 import { explainError } from "@/lib/errors";
+import { Button, Card, CardTitle, Eyebrow, Field, inputClass, Notice } from "./ui";
 
 /**
  * Heir starts a claim. The proof's signal is the payout address, so whoever relays the transaction
@@ -53,38 +54,38 @@ export function HeirClaim({ will, onDone }: { will: WillData; onDone: () => void
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="font-bold">For the heir: start a claim</h2>
-      <p className="text-sm text-zinc-500">
+    <Card className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Eyebrow>For the heir</Eyebrow>
+        <CardTitle>Start a claim</CardTitle>
+      </div>
+      <p className="text-sm text-ink-soft">
         Verify with the World ID named as heir. After the challenge period, the funds go to the payout address below
         — it is locked into your proof, so make sure you control it.
       </p>
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Payout address</span>
+      <Field label="Payout address">
         <input
-          className="rounded border px-2 py-1 font-mono text-sm dark:bg-zinc-900"
+          className={`${inputClass} font-mono`}
           placeholder="0x…"
           value={payout}
           onChange={(e) => setPayoutInput(e.target.value.trim())}
         />
-      </label>
-      <button
-        className="self-start rounded bg-black px-4 py-2 text-white disabled:opacity-40 dark:bg-white dark:text-black"
-        disabled={!address || !payoutValid || busy}
-        onClick={claim}
-      >
-        Verify as heir &amp; claim
-      </button>
+      </Field>
+      <div>
+        <Button disabled={!address || !payoutValid || busy} onClick={claim}>
+          Verify as heir &amp; claim
+        </Button>
+      </div>
       {!address && (
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-muted">
           Connect any wallet to submit the transaction — it can be someone else&apos;s, the funds still go to your
           payout address.
         </p>
       )}
-      {address && payout !== "" && !payoutValid && <p className="text-sm text-red-600">Enter a valid address.</p>}
+      {address && payout !== "" && !payoutValid && <Notice tone="error">Enter a valid address.</Notice>}
       <TxStatus status={tx.status} />
-      {scanError && <p className="text-sm text-red-600">{scanError}</p>}
+      {scanError && <Notice tone="error">{scanError}</Notice>}
       {worldId.widget}
-    </section>
+    </Card>
   );
 }

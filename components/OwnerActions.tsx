@@ -9,6 +9,7 @@ import { useWillTx } from "@/hooks/useWillTx";
 import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof";
 import { ALIVE_ACTION } from "@/lib/constants";
 import { explainError } from "@/lib/errors";
+import { Button, Card, CardTitle, Eyebrow, Notice } from "./ui";
 import type { ProofArgs } from "@/lib/worldid";
 
 // TD-009: the owner can check in (or cancel) through every phase until the challenge period ends.
@@ -57,48 +58,47 @@ export function OwnerActions({ will, onDone }: { will: WillData; onDone: () => v
   };
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="font-bold">You are the owner</h2>
-      <p className="text-sm text-zinc-500">
+    <Card className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Eyebrow>You are the owner</Eyebrow>
+        <CardTitle>{will.phase === "Challenge" ? "Stop the claim" : "Check in"}</CardTitle>
+      </div>
+      <p className="text-sm text-ink-soft">
         {will.phase === "Challenge"
           ? "Your heir has started a claim. Check in now to void it."
           : "Check in with World ID to prove you are alive and restart the timer."}
       </p>
       <div className="flex flex-wrap gap-2">
-        <button
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-40 dark:bg-white dark:text-black"
-          disabled={busy}
-          onClick={checkIn}
-        >
-          Check in
-        </button>
+        <Button disabled={busy} onClick={checkIn}>
+          Check in with World ID
+        </Button>
         {!confirmingCancel && (
-          <button className="rounded border px-4 py-2 disabled:opacity-40" disabled={busy} onClick={() => setConfirmingCancel(true)}>
+          <Button variant="secondary" disabled={busy} onClick={() => setConfirmingCancel(true)}>
             Cancel will
-          </button>
+          </Button>
         )}
       </div>
 
       {confirmingCancel && (
-        <div className="flex flex-col gap-2 rounded bg-zinc-100 p-3 text-sm dark:bg-zinc-900">
+        <div className="flex flex-col gap-3 rounded-md border border-danger/30 bg-danger-tint p-4 text-sm text-ink">
           <p>
             This ends the will and returns {formatEther(will.amount)} ETH to your wallet. Your heir will no longer be
             able to claim.
           </p>
           <div className="flex gap-2">
-            <button className="rounded bg-red-600 px-3 py-1 text-white" onClick={cancel}>
+            <Button variant="danger" onClick={cancel}>
               Yes, cancel the will
-            </button>
-            <button className="rounded border px-3 py-1" onClick={() => setConfirmingCancel(false)}>
+            </Button>
+            <Button variant="secondary" onClick={() => setConfirmingCancel(false)}>
               Keep it
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
       <TxStatus status={tx.status} />
-      {scanError && <p className="text-sm text-red-600">{scanError}</p>}
+      {scanError && <Notice tone="error">{scanError}</Notice>}
       {worldId.widget}
-    </section>
+    </Card>
   );
 }

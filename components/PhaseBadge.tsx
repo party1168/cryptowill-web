@@ -13,7 +13,7 @@ const STYLES: Record<WillPhaseName, string> = {
 
 export function PhaseBadge({ phase }: { phase: WillPhaseName }) {
   return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STYLES[phase]}`}>
+    <span className={`inline-flex w-fit items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${STYLES[phase]}`}>
       {phase}
     </span>
   );

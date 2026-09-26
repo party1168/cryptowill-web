@@ -6,6 +6,7 @@ import { TxStatus } from "@/components/TxStatus";
 import type { WillData } from "@/hooks/useWill";
 import { useWillTx } from "@/hooks/useWillTx";
 import { shortAddress } from "./ConnectButton";
+import { Button, Card, CardTitle, Eyebrow } from "./ui";
 
 /** Anyone may finalize once the challenge period is over; no World ID proof needed (TD-009). */
 export function FinalizeAction({ will, onDone }: { will: WillData; onDone: () => void }) {
@@ -26,20 +27,21 @@ export function FinalizeAction({ will, onDone }: { will: WillData; onDone: () =>
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded border border-zinc-300 p-4 dark:border-zinc-700">
-      <h2 className="font-bold">Finalize the payout</h2>
-      <p className="text-sm text-zinc-500">
-        Sends {formatEther(will.amount)} ETH to {shortAddress(will.payoutAddress)}. Anyone can submit this.
+    <Card className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Eyebrow>Anyone can do this</Eyebrow>
+        <CardTitle>Finalize the payout</CardTitle>
+      </div>
+      <p className="text-sm text-ink-soft">
+        Sends {formatEther(will.amount)} ETH to {shortAddress(will.payoutAddress)}..
       </p>
-      <button
-        className="self-start rounded bg-black px-4 py-2 text-white disabled:opacity-40 dark:bg-white dark:text-black"
-        disabled={!address || busy}
-        onClick={finalize}
-      >
-        Finalize
-      </button>
-      {!address && <p className="text-sm text-zinc-500">Connect a wallet to submit the transaction.</p>}
+      <div>
+        <Button disabled={!address || busy} onClick={finalize}>
+          Finalize payout
+        </Button>
+      </div>
+      {!address && <p className="text-sm text-muted">Connect a wallet to submit the transaction.</p>}
       <TxStatus status={tx.status} />
-    </section>
+    </Card>
   );
 }
