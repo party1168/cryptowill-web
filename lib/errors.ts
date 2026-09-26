@@ -1,4 +1,4 @@
-import { BaseError, ContractFunctionRevertedError, parseAbi, UserRejectedRequestError } from "viem";
+import { parseAbi } from "viem";
 import { cryptoWillAbi } from "./abi";
 
 /** WorldIDRouter errors bubble up through CryptoWill; adding them lets viem decode them by name. */
@@ -31,16 +31,22 @@ const MESSAGES: Record<string, string> = {
   TransferFailed: "Transfer failed: the payout address cannot receive ETH.",
 };
 
+/**
+ * Matches viem errors by `name` rather than `instanceof`, so it still works if more than one copy of
+ * viem ends up in the bundle (errors from one copy are not instances of the other's classes).
+ */
 export function explainError(err: unknown): string {
-  if (err instanceof BaseError) {
-    const reverted = err.walk((e) => e instanceof ContractFunctionRevertedError);
-    if (reverted instanceof ContractFunctionRevertedError) {
-      const name = reverted.data?.errorName;
-      if (name && MESSAGES[name]) return MESSAGES[name];
-      return reverted.shortMessage;
-    }
-    if (err.walk((e) => e instanceof UserRejectedRequestError)) return "You rejected the transaction in your wallet.";
-    return err.shortMessage;
+  if (!(err instanceof Error)) return String(err);
+  let reverted: (Error & { data?: { errorName?: string } }) | undefined;
+  let rejected = false;
+  for (let e: unknown = err; e instanceof Error; e = e.cause) {
+    if (e.name === "ContractFunctionRevertedError") reverted ??= e;
+    if (e.name === "UserRejectedRequestError") rejected = true;
   }
-  return err instanceof Error ? err.message : String(err);
+  const name = reverted?.data?.errorName;
+  if (name && MESSAGES[name]) return MESSAGES[name];
+  if (rejected) return "You rejected the transaction in your wallet.";
+  return (reverted as { shortMessage?: string } | undefined)?.shortMessage
+    ?? (err as { shortMessage?: string }).shortMessage
+    ?? err.message;
 }
