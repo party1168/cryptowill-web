@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { isAddress, zeroAddress, type Address } from "viem";
+import { isAddress, isAddressEqual, zeroAddress, type Address } from "viem";
 import { useConnection } from "wagmi";
 import { TxStatus } from "@/components/TxStatus";
 import type { WillData } from "@/hooks/useWill";
@@ -9,6 +9,7 @@ import { useWillTx } from "@/hooks/useWillTx";
 import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof";
 import { CLAIM_ACTION } from "@/lib/constants";
 import { explainError } from "@/lib/errors";
+import { useVerifiedHeir } from "@/lib/heirSession";
 import { Button, Card, CardTitle, Eyebrow, Field, inputClass, Notice } from "./ui";
 
 /**
@@ -21,8 +22,14 @@ export function HeirClaim({ will, onDone }: { will: WillData; onDone: () => void
   const tx = useWillTx();
   const [payoutInput, setPayoutInput] = useState<string | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const verifiedHeir = useVerifiedHeir();
 
   if (will.phase !== "Claimable") return null;
+  // Hide from the owner looking at their own will, unless this tab has verified the heir
+  // ("Find wills that name me") — then the owner's wallet may relay the claim (TD-007).
+  const isOwner = !!address && isAddressEqual(address, will.owner);
+  const heirVerifiedHere = verifiedHeir === will.heirNullifier;
+  if (isOwner && !heirVerifiedHere) return null;
 
   // Default to the connected wallet until the heir types something else.
   const payout = payoutInput ?? address ?? "";
@@ -59,6 +66,7 @@ export function HeirClaim({ will, onDone }: { will: WillData; onDone: () => void
         <Eyebrow>For the heir</Eyebrow>
         <CardTitle>Start a claim</CardTitle>
       </div>
+      {heirVerifiedHere && <Notice tone="success">You verified as the heir of this will in this tab.</Notice>}
       <p className="text-sm text-ink-soft">
         Verify with the World ID named as heir. After the challenge period, the funds go to the payout address below
         — it is locked into your proof, so make sure you control it.
