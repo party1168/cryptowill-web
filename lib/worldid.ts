@@ -27,15 +27,15 @@ export function expectedSignalHash(signal: string): bigint {
  */
 export function toProofArgs(result: IDKitResult, action: string, signal: string): ProofArgs {
   if (!("protocol_version" in result) || result.protocol_version !== "3.0") {
-    throw new Error("World ID 回傳的不是 v3 legacy proof，無法在鏈上驗證（檢查 allow_legacy_proofs / orbLegacy）");
+    throw new Error("World ID did not return a v3 legacy proof, which is required on-chain (check allow_legacy_proofs / orbLegacy).");
   }
   if (result.action !== undefined && result.action !== action) {
-    throw new Error(`World ID action 不符：預期 ${action}，實際 ${result.action}`);
+    throw new Error(`World ID action mismatch: expected ${action}, got ${result.action}`);
   }
   const item = result.responses[0];
-  if (!item) throw new Error("World ID 回傳內容缺少 responses");
+  if (!item) throw new Error("World ID result has no responses.");
   if (!item.signal_hash || BigInt(item.signal_hash) !== expectedSignalHash(signal)) {
-    throw new Error("signal_hash 與合約預期不一致：前端傳給 IDKit 的 signal 編碼錯誤");
+    throw new Error("signal_hash does not match what the contract expects: the signal passed to IDKit is encoded incorrectly.");
   }
 
   const [proof] = decodeAbiParameters([{ type: "uint256[8]" }], item.proof as Hex);

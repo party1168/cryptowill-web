@@ -20,7 +20,7 @@ type Pending = {
 
 export class WorldIdCancelledError extends Error {
   constructor() {
-    super("已取消 World ID 驗證");
+    super("World ID verification was cancelled");
   }
 }
 
@@ -33,7 +33,7 @@ export function useWorldIdProof() {
   const settled = useRef(true);
 
   const request = useCallback(async (action: WorldIdAction, signal: WorldIdSignal) => {
-    if (!settled.current) throw new Error("已有一個 World ID 驗證進行中");
+    if (!settled.current) throw new Error("A World ID verification is already in progress");
     // Fresh RP signature every time: it carries its own expires_at.
     const res = await fetch("/api/rp-signature", {
       method: "POST",
@@ -78,7 +78,7 @@ export function useWorldIdProof() {
           }
         })
       }
-      onError={(code) => settle(() => pending.reject(new Error(`World ID 錯誤：${code}`)))}
+      onError={(code) => settle(() => pending.reject(new Error(`World ID error: ${code}`)))}
     />
   );
 

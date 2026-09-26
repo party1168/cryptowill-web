@@ -12,23 +12,23 @@ export const cryptoWillAbiWithRouterErrors = [...cryptoWillAbi, ...worldIdRouter
 
 const MESSAGES: Record<string, string> = {
   // WorldIDRouter (TD-006)
-  ExpiredRoot: "World ID 驗證已過期（root 過期），請重新掃碼後立刻送出",
-  ProofInvalid: "World ID proof 無效：action、app_id 或 signal 與合約不一致",
-  NonExistentRoot: "World ID root 不存在於這條鏈上（環境或鏈設定錯誤）",
+  ExpiredRoot: "World ID verification expired (stale root). Scan again and submit right away.",
+  ProofInvalid: "Invalid World ID proof: action, app_id or signal does not match the contract.",
+  NonExistentRoot: "World ID root not found on this chain (wrong environment or chain).",
   // CryptoWill
-  WillAlreadyActive: "這個地址已經有一份進行中的遺囑",
-  ZeroAmount: "遺產金額必須大於 0",
-  ZeroPeriod: "三個時間參數都必須大於 0",
-  InvalidHeirNullifier: "繼承人 nullifier 無效",
-  HeirIsOwner: "繼承人不能是你自己",
-  NotOwner: "只有遺囑的委託人可以執行這個操作",
-  NullifierMismatch: "World ID 身分與遺囑登記的不符",
-  InvalidStatus: "遺囑目前的狀態不允許這個操作",
-  ChallengeWindowClosed: "挑戰期已結束，無法再 check-in 或取消",
-  ChallengeWindowOpen: "挑戰期尚未結束，還不能執行",
-  NotClaimableYet: "還沒到可以認領的時間",
-  ZeroPayoutAddress: "收款地址不能是 0",
-  TransferFailed: "轉帳失敗：收款地址無法接收 ETH",
+  WillAlreadyActive: "This address already has an active will.",
+  ZeroAmount: "The will amount must be greater than 0.",
+  ZeroPeriod: "All three time periods must be greater than 0.",
+  InvalidHeirNullifier: "Invalid heir nullifier.",
+  HeirIsOwner: "You cannot name yourself as the heir.",
+  NotOwner: "Only the owner of this will can do this.",
+  NullifierMismatch: "This World ID does not match the one registered on the will.",
+  InvalidStatus: "The will's current status does not allow this action.",
+  ChallengeWindowClosed: "The challenge period is over; check-in and cancel are no longer possible.",
+  ChallengeWindowOpen: "The challenge period has not ended yet.",
+  NotClaimableYet: "This will cannot be claimed yet.",
+  ZeroPayoutAddress: "The payout address cannot be the zero address.",
+  TransferFailed: "Transfer failed: the payout address cannot receive ETH.",
 };
 
 export function explainError(err: unknown): string {
@@ -39,7 +39,7 @@ export function explainError(err: unknown): string {
       if (name && MESSAGES[name]) return MESSAGES[name];
       return reverted.shortMessage;
     }
-    if (err.walk((e) => e instanceof UserRejectedRequestError)) return "你在錢包中取消了這筆交易";
+    if (err.walk((e) => e instanceof UserRejectedRequestError)) return "You rejected the transaction in your wallet.";
     return err.shortMessage;
   }
   return err instanceof Error ? err.message : String(err);
