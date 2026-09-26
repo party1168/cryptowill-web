@@ -1,53 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useState } from "react";
 import { formatEther } from "viem";
 import { useHeirWills } from "@/hooks/useHeirWills";
 import { useWorldIdProof, WorldIdCancelledError } from "@/hooks/useWorldIdProof";
 import { CLAIM_ACTION, HEIR_REGISTER_SIGNAL } from "@/lib/constants";
 import { explainError } from "@/lib/errors";
+import { setVerifiedHeir, useVerifiedHeir } from "@/lib/heirSession";
 import { shortAddress } from "./ConnectButton";
 import { PhaseBadge } from "./PhaseBadge";
 import { Button, Card, CardTitle, Eyebrow, Notice } from "./ui";
 
-const STORAGE_KEY = "cryptowill.heirNullifier";
-
-// The looked-up nullifier, remembered for this tab so going back from a will page doesn't need a
-// re-scan. Kept in memory too, so lookups still work when sessionStorage is blocked.
-let savedNullifier: string | null | undefined;
-const listeners = new Set<() => void>();
-
-function readSaved(): string | null {
-  if (savedNullifier === undefined) {
-    try {
-      savedNullifier = sessionStorage.getItem(STORAGE_KEY);
-    } catch {
-      savedNullifier = null;
-    }
-  }
-  return savedNullifier;
-}
-
-function save(value: string | null) {
-  savedNullifier = value;
-  try {
-    if (value === null) sessionStorage.removeItem(STORAGE_KEY);
-    else sessionStorage.setItem(STORAGE_KEY, value);
-  } catch {}
-  listeners.forEach((notify) => notify());
-}
-
-function subscribe(notify: () => void) {
-  listeners.add(notify);
-  return () => listeners.delete(notify);
-}
-
 /** Lets an heir find the wills naming them. No wallet needed — the heir is identified by World ID only. */
 export function HeirLookup() {
   const worldId = useWorldIdProof();
-  const saved = useSyncExternalStore(subscribe, readSaved, () => null);
-  const nullifier = saved === null ? null : BigInt(saved);
+  const nullifier = useVerifiedHeir();
   const [scanError, setScanError] = useState<string | null>(null);
   const { wills, error } = useHeirWills(nullifier);
 
@@ -56,13 +24,13 @@ export function HeirLookup() {
     try {
       // Same text signal as heir registration: this proof can never satisfy initiateClaim.
       const { nullifierHash } = await worldId.request(CLAIM_ACTION, HEIR_REGISTER_SIGNAL);
-      save(nullifierHash.toString());
+      setVerifiedHeir(nullifierHash);
     } catch (e) {
       if (!(e instanceof WorldIdCancelledError)) setScanError(explainError(e));
     }
   }
 
-  const forget = () => save(null);
+  const forget = () => setVerifiedHeir(null);
 
   return (
     <Card className="flex flex-col gap-4">
